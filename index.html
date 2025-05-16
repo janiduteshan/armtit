@@ -17,47 +17,139 @@
             body {
                 margin: 0;
                 overflow: hidden;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             }
             .ar-loader {
                 position: absolute;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                font-family: Arial, sans-serif;
                 color: white;
-                font-size: 20px;
+                font-size: 18px;
                 text-align: center;
-                background-color: rgba(0, 0, 0, 0.7);
-                padding: 20px;
-                border-radius: 10px;
+                background-color: rgba(40, 44, 52, 0.85);
+                padding: 25px;
+                border-radius: 15px;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
                 z-index: 999;
+                backdrop-filter: blur(5px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                min-width: 280px;
+            }
+            .ar-loader::after {
+                content: '';
+                display: block;
+                width: 40px;
+                height: 40px;
+                margin: 15px auto 0;
+                border: 4px solid #ffffff;
+                border-top: 4px solid #4285f4;
+                border-radius: 50%;
+                animation: spin 1.5s linear infinite;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
             }
             .instructions {
                 position: absolute;
                 bottom: 20px;
                 left: 50%;
                 transform: translateX(-50%);
-                background-color: rgba(0, 0, 0, 0.7);
+                background-color: rgba(40, 44, 52, 0.85);
                 color: white;
-                padding: 10px 20px;
-                border-radius: 10px;
-                font-family: Arial, sans-serif;
+                padding: 15px 25px;
+                border-radius: 12px;
                 text-align: center;
                 z-index: 999;
+                max-width: 80%;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                backdrop-filter: blur(5px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                animation: fadeIn 0.5s ease-out;
+                transition: opacity 0.5s ease;
+            }
+            .instructions::before {
+                content: '📱';
+                display: inline-block;
+                margin-right: 8px;
+            }
+            @keyframes fadeIn {
+                0% { opacity: 0; transform: translate(-50%, 20px); }
+                100% { opacity: 1; transform: translate(-50%, 0); }
+            }
+            .ui-panel {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                z-index: 999;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .ui-button {
+                background: rgba(40, 44, 52, 0.85);
+                color: white;
+                border: none;
+                padding: 8px 15px;
+                border-radius: 8px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+                backdrop-filter: blur(5px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                font-size: 14px;
+            }
+            .ui-button:hover {
+                background: rgba(60, 64, 74, 0.9);
+                transform: translateY(-2px);
+            }
+            .ui-button:active {
+                transform: translateY(0);
+            }
+            #object-info {
+                position: absolute;
+                bottom: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: rgba(40, 44, 52, 0.9);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 12px;
+                text-align: center;
+                z-index: 999;
+                max-width: 80%;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(5px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                animation: slideUp 0.3s ease-out;
+                display: none;
+            }
+            @keyframes slideUp {
+                0% { transform: translate(-50%, 20px); opacity: 0; }
+                100% { transform: translate(-50%, 0); opacity: 1; }
             }
         </style>
     </head>
     <body>
         <div class="ar-loader" id="loader">
-            <p>Loading Classroom AR Experience...</p>
+            <p><strong>Classroom AR Experience</strong></p>
+            <p>Initializing augmented reality components...</p>
             <p>Please allow camera access when prompted</p>
         </div>
 
         <div class="instructions" id="instructions">
-            Point your camera at the markers to see classroom objects
+            Point your camera at the printed markers to view 3D classroom objects
         </div>
 
-        <div id="object-info" style="display: none"></div>
+        <div id="object-info"></div>
+
+        <div class="ui-panel">
+            <button id="toggle-sound" class="ui-button">Sound: ON</button>
+            <button id="toggle-particles" class="ui-button">Effects: ON</button>
+            <button id="toggle-help" class="ui-button">Show Help</button>
+        </div>
 
         <a-scene
             arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;"
@@ -153,16 +245,34 @@
 
         <script>
             window.addEventListener("load", function () {
-                // Hide loader after everything is loaded
+                // Hide loader with fade effect after everything is loaded
                 setTimeout(function () {
-                    document.getElementById("loader").style.display = "none";
+                    const loader = document.getElementById("loader");
+                    loader.style.opacity = "0";
+                    loader.style.transition = "opacity 0.5s ease";
+                    setTimeout(() => {
+                        loader.style.display = "none";
+                    }, 500);
                 }, 3000);
 
-                // Hide instructions after 10 seconds
+                // Hide instructions after 10 seconds with fade effect
                 setTimeout(function () {
-                    document.getElementById("instructions").style.display =
-                        "none";
+                    const instructions = document.getElementById("instructions");
+                    instructions.style.opacity = "0";
                 }, 10000);
+                
+                // Toggle help button functionality
+                document.getElementById("toggle-help").addEventListener("click", function() {
+                    const instructions = document.getElementById("instructions");
+                    if (instructions.style.opacity === "0" || !instructions.style.opacity) {
+                        instructions.style.opacity = "1";
+                        setTimeout(() => {
+                            instructions.style.opacity = "0";
+                        }, 5000);
+                    } else {
+                        instructions.style.opacity = "0";
+                    }
+                });
             });
         </script>
     </body>

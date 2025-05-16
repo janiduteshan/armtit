@@ -1,13 +1,21 @@
-// AR Classroom Application - Main JavaScript
+/**
+ * Classroom AR Experience - Core Application Logic
+ * 
+ * This module handles marker detection, 3D model rendering, and interactive UI elements
+ * for an augmented reality educational experience targeting classroom environments.
+ * 
+ * @author Classroom AR Team
+ * @version 1.0.0
+ */
 document.addEventListener('DOMContentLoaded', function() {
-    // Configuration
+    // Application configuration parameters
     const config = {
-        enableSounds: true,
-        enableParticles: true,
-        debugMode: false
+        enableSounds: true,     // Toggle audio feedback
+        enableParticles: true,  // Toggle particle effects on marker detection
+        debugMode: false        // Enable performance monitoring and debug logs
     };
 
-    // Sound effects for different objects
+    // Audio resources mapping for object-specific sound effects
     const sounds = {
         desk: new Audio('assets/sounds/desk.mp3'),
         chair: new Audio('assets/sounds/chair.mp3'),
@@ -16,13 +24,14 @@ document.addEventListener('DOMContentLoaded', function() {
         globe: new Audio('assets/sounds/globe.mp3')
     };
 
-    // Preload all sounds
+    // Preload audio assets to minimize latency during runtime
     Object.values(sounds).forEach(sound => {
         sound.load();
-        sound.volume = 0.5;
+        sound.volume = 0.5; // Set consistent volume level across all audio
     });
 
-    // Initialize counters for tracking marker detections
+    // Detection counters to track marker visualization instances
+    // Used for optimization and one-time effect triggering
     let markerCounts = {
         desk: 0,
         chair: 0,
@@ -31,42 +40,52 @@ document.addEventListener('DOMContentLoaded', function() {
         globe: 0
     };
 
-    // Register for marker events
+    /**
+     * Initialize marker event listeners for AR detection
+     * Handles marker detection/loss events and triggers appropriate visual/audio feedback
+     */
     const markers = document.querySelectorAll('a-marker');
     markers.forEach(marker => {
         const markerId = marker.getAttribute('id');
         const objectName = markerId.split('-')[0];
 
-        // Event when marker is found
+        // Handle marker detection event
         marker.addEventListener('markerFound', function() {
-            console.log(`${objectName} marker detected`);
+            if (config.debugMode) console.log(`AR Detection: ${objectName} marker identified`);
             markerCounts[objectName]++;
             
-            // Play sound if enabled
+            // Trigger audio feedback based on configuration
             if (config.enableSounds) {
                 sounds[objectName].play().catch(error => {
-                    console.warn('Sound play failed:', error);
+                    console.warn(`Audio playback failed for ${objectName}:`, error);
                 });
             }
 
-            // Show object info popup
+            // Display contextual information for the detected object
             showObjectInfo(objectName);
             
-            // Add particles if enabled and it's the first detection
+            // Generate particle effects for first-time detections
             if (config.enableParticles && markerCounts[objectName] === 1) {
                 createParticleEffect(marker, objectName);
             }
         });
 
-        // Event when marker is lost
+        // Handle marker loss event
         marker.addEventListener('markerLost', function() {
-            console.log(`${objectName} marker lost`);
+            if (config.debugMode) console.log(`AR Detection: ${objectName} marker lost`);
             hideObjectInfo();
         });
     });
 
-    // Create particle effect for object appearance
+    /**
+     * Generate particle visual effects for marker detection
+     * Creates a temporary particle system entity attached to the detected marker
+     * 
+     * @param {HTMLElement} marker - The A-Frame marker element
+     * @param {string} objectName - Name of the detected object
+     */
     function createParticleEffect(marker, objectName) {
+        // Create A-Frame entity for particle system
         const entity = document.createElement('a-entity');
         entity.setAttribute('position', '0 0.5 0');
         entity.setAttribute('particle-system', {
@@ -79,23 +98,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         marker.appendChild(entity);
         
-        // Remove particle system after animation completes
+        // Cleanup: Remove particle system once animation completes
         setTimeout(() => {
             marker.removeChild(entity);
         }, 2000);
     }
 
-    // Show information about the detected object
+    /**
+     * Display information panel for the detected object
+     * Shows contextual information about the currently detected AR object
+     * 
+     * @param {string} objectName - Name of the detected object
+     */
     function showObjectInfo(objectName) {
         const infoElement = document.getElementById('object-info');
         if (infoElement) {
             const objectInfoText = getObjectDescription(objectName);
             infoElement.textContent = objectInfoText;
             infoElement.style.display = 'block';
+            
+            // Apply animation reset to trigger animation effect
+            infoElement.style.animation = 'none';
+            setTimeout(() => {
+                infoElement.style.animation = 'slideUp 0.3s ease-out';
+            }, 10);
         }
     }
 
-    // Hide information popup
+    /**
+     * Hide the information panel when marker is lost
+     */
     function hideObjectInfo() {
         const infoElement = document.getElementById('object-info');
         if (infoElement) {
@@ -103,75 +135,107 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Get description for each classroom object
+    /**
+     * Retrieve descriptive text for each classroom object
+     * Returns educational context for the detected AR objects
+     * 
+     * @param {string} objectName - Name of the detected object
+     * @returns {string} Descriptive text for the object
+     */
     function getObjectDescription(objectName) {
         const descriptions = {
-            desk: "Student Desk: Where learning happens.",
-            chair: "Classroom Chair: Take a seat!",
-            blackboard: "Blackboard: Traditional teaching tool.",
-            bookshelf: "Bookshelf: Knowledge storage unit.",
-            globe: "World Globe: Explore our planet!"
+            desk: "Student Desk: Individual workspace designed for focused learning and collaboration",
+            chair: "Classroom Chair: Ergonomic seating designed for proper posture during learning sessions",
+            blackboard: "Blackboard: Traditional visual communication tool for educational content delivery",
+            bookshelf: "Bookshelf: Storage system for educational resources and reference materials",
+            globe: "World Globe: Three-dimensional geographical representation for spatial learning"
         };
         
         return descriptions[objectName] || "Classroom Object";
     }
 
-    // Create info display element if it doesn't exist
+    // Initialize dynamic UI elements if not defined in HTML
     if (!document.getElementById('object-info')) {
         const infoElement = document.createElement('div');
         infoElement.id = 'object-info';
         infoElement.style.cssText = `
             position: absolute;
-            bottom: 70px;
+            bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: rgba(40, 44, 52, 0.9);
             color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-family: Arial, sans-serif;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             z-index: 999;
+            max-width: 80%;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideUp 0.3s ease-out;
             display: none;
         `;
         document.body.appendChild(infoElement);
     }
 
-    // Toggle buttons for features
-    const controlPanel = document.createElement('div');
-    controlPanel.innerHTML = `
-        <div style="position: absolute; top: 10px; right: 10px; z-index: 999;">
-            <button id="toggle-sound" style="background: #333; color: white; border: none; padding: 5px 10px; margin: 2px; border-radius: 5px;">Sound: ON</button>
-            <button id="toggle-particles" style="background: #333; color: white; border: none; padding: 5px 10px; margin: 2px; border-radius: 5px;">Particles: ON</button>
-        </div>
-    `;
-    document.body.appendChild(controlPanel);
+    // Initialize UI controls if they don't exist in HTML
+    if (!document.querySelector('.ui-panel')) {
+        const controlPanel = document.createElement('div');
+        controlPanel.className = 'ui-panel';
+        controlPanel.innerHTML = `
+            <button id="toggle-sound" class="ui-button">Sound: ON</button>
+            <button id="toggle-particles" class="ui-button">Effects: ON</button>
+            <button id="toggle-help" class="ui-button">Show Help</button>
+        `;
+        document.body.appendChild(controlPanel);
+    }
 
-    // Add toggle functionality
+    // Attach event listeners to control buttons
     document.getElementById('toggle-sound').addEventListener('click', function() {
         config.enableSounds = !config.enableSounds;
         this.textContent = `Sound: ${config.enableSounds ? 'ON' : 'OFF'}`;
+        
+        // Provide visual feedback for state change
+        this.style.backgroundColor = config.enableSounds ? 
+            'rgba(40, 44, 52, 0.85)' : 'rgba(80, 30, 30, 0.85)';
     });
 
     document.getElementById('toggle-particles').addEventListener('click', function() {
         config.enableParticles = !config.enableParticles;
-        this.textContent = `Particles: ${config.enableParticles ? 'ON' : 'OFF'}`;
+        this.textContent = `Effects: ${config.enableParticles ? 'ON' : 'OFF'}`;
+        
+        // Provide visual feedback for state change
+        this.style.backgroundColor = config.enableParticles ? 
+            'rgba(40, 44, 52, 0.85)' : 'rgba(80, 30, 30, 0.85)';
     });
 
-    // Performance monitoring
+    /**
+     * Initialize performance monitoring in debug mode
+     * Adds FPS counter and performance stats when debug mode is enabled
+     */
     if (config.debugMode) {
-        const stats = new Stats();
-        stats.showPanel(0);
-        document.body.appendChild(stats.dom);
-        
-        function animate() {
-            stats.begin();
-            stats.end();
-            requestAnimationFrame(animate);
+        // Dynamically load Stats.js if not already available
+        if (typeof Stats === 'undefined') {
+            console.warn('Stats.js not found. Performance monitoring disabled.');
+        } else {
+            const stats = new Stats();
+            stats.showPanel(0); // 0: fps, 1: ms, 2: mb
+            stats.dom.style.cssText = 'position:absolute;top:0;left:0;z-index:1000;';
+            document.body.appendChild(stats.dom);
+            
+            function animate() {
+                stats.begin();
+                stats.end();
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+            console.info('Performance monitoring initialized');
         }
-        
-        animate();
     }
 
-    console.log('AR Classroom application initialized');
+    // Add version information tracking to console
+    console.info('Classroom AR Experience v1.0.0 initialized successfully');
 });
