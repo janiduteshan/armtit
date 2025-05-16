@@ -49,21 +49,21 @@
         <p>Loading Classroom AR Experience...</p>
         <p>Please allow camera access when prompted</p>
     </div>
-    
+
     <div class="instructions" id="instructions">
         Point your camera at the markers to see classroom objects
     </div>
-    
+
     <div id="object-info" style="display: none;"></div>
 
-    <a-scene 
+    <a-scene
         arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;"
         renderer="logarithmicDepthBuffer: true; precision: medium;"
         embedded
         loading-screen="enabled: false"
         vr-mode-ui="enabled: false"
         stats="false">
-        
+
         <!-- Desk Marker and 3D Model -->
         <a-marker type="pattern" url="patterns/desk_marker.patt" id="desk-marker">
             <a-entity
@@ -71,11 +71,11 @@
                 rotation="-90 0 0"
                 scale="0.5 0.5 0.5"
                 gltf-model="assets/desk.glb"
-                animation="property: rotation; to: -90 360 0; loop: true; dur: 15000; easing: linear;"
+                <!--animation="property: rotation; to: -90 360 0; loop: true; dur: 15000; easing: linear;"-->
                 sound="src: assets/sounds/desk.mp3; on: markerFound; volume: 0.5;">
             </a-entity>
         </a-marker>
-        
+
         <!-- Chair Marker and 3D Model -->
         <a-marker type="pattern" url="patterns/chair_marker.patt" id="chair-marker">
             <a-entity
@@ -86,7 +86,7 @@
                 sound="src: assets/sounds/chair.mp3; on: markerFound; volume: 0.5;">
             </a-entity>
         </a-marker>
-        
+
         <!-- Blackboard Marker and 3D Model -->
         <a-marker type="pattern" url="patterns/blackboard_marker.patt" id="blackboard-marker">
             <a-entity
@@ -97,7 +97,7 @@
                 sound="src: assets/sounds/blackboard.mp3; on: markerFound; volume: 0.5;">
             </a-entity>
         </a-marker>
-        
+
         <!-- Bookshelf Marker and 3D Model -->
         <a-marker type="pattern" url="patterns/bookshelf_marker.patt" id="bookshelf-marker">
             <a-entity
@@ -108,7 +108,7 @@
                 sound="src: assets/sounds/bookshelf.mp3; on: markerFound; volume: 0.5;">
             </a-entity>
         </a-marker>
-        
+
         <!-- Globe Marker and 3D Model -->
         <a-marker type="pattern" url="patterns/globe_marker.patt" id="globe-marker">
             <a-entity
@@ -120,7 +120,7 @@
                 sound="src: assets/sounds/globe.mp3; on: markerFound; volume: 0.5;">
             </a-entity>
         </a-marker>
-        
+
         <!-- Camera -->
         <a-entity camera></a-entity>
     </a-scene>
@@ -131,7 +131,7 @@
             setTimeout(function() {
                 document.getElementById('loader').style.display = 'none';
             }, 3000);
-            
+
             // Hide instructions after 10 seconds
             setTimeout(function() {
                 document.getElementById('instructions').style.display = 'none';
