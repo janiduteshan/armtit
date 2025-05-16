@@ -45,19 +45,6 @@
                 text-align: center;
                 z-index: 999;
             }
-            .camera-switch {
-                position: absolute;
-                top: 20px;
-                right: 20px;
-                background-color: rgba(0, 0, 0, 0.7);
-                color: white;
-                padding: 10px;
-                border-radius: 5px;
-                font-family: Arial, sans-serif;
-                z-index: 999;
-                border: none;
-                cursor: pointer;
-            }
         </style>
     </head>
     <body>
@@ -70,14 +57,10 @@
             Point your camera at the markers to see classroom objects
         </div>
 
-        <button class="camera-switch" id="camera-switch">
-            Use Standard Camera
-        </button>
-
         <div id="object-info" style="display: none"></div>
 
         <a-scene
-            arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; cameraParametersUrl: data/camera_para.dat;"
+            arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix;"
             renderer="logarithmicDepthBuffer: true; precision: medium;"
             embedded
             loading-screen="enabled: false"
@@ -180,63 +163,6 @@
                     document.getElementById("instructions").style.display =
                         "none";
                 }, 10000);
-
-                // Camera switching functionality
-                const cameraSwitch = document.getElementById("camera-switch");
-                let usingStandardCamera = false;
-
-                // This function will attempt to switch between available cameras
-                cameraSwitch.addEventListener("click", function () {
-                    // Get video element used by AR.js
-                    const video = document.querySelector("video");
-
-                    if (
-                        video &&
-                        navigator.mediaDevices &&
-                        navigator.mediaDevices.getUserMedia
-                    ) {
-                        // Stop current video stream
-                        if (video.srcObject) {
-                            const tracks = video.srcObject.getTracks();
-                            tracks.forEach((track) => track.stop());
-                        }
-
-                        // Toggle between cameras
-                        usingStandardCamera = !usingStandardCamera;
-
-                        // Request specific camera
-                        navigator.mediaDevices
-                            .getUserMedia({
-                                video: {
-                                    facingMode: "environment",
-                                    // If using standard camera, specify not to use ultra-wide
-                                    advanced: usingStandardCamera
-                                        ? [
-                                              {
-                                                  // Request standard camera by avoiding ultra-wide focal length
-                                                  // This is approximate as capabilities vary by device
-                                                  // Values typically around 1 are standard, below 0.5 is ultrawide
-                                                  focalLength: 1.0,
-                                              },
-                                          ]
-                                        : [],
-                                },
-                                audio: false,
-                            })
-                            .then(function (stream) {
-                                video.srcObject = stream;
-                                cameraSwitch.textContent = usingStandardCamera
-                                    ? "Use Default Camera"
-                                    : "Use Standard Camera";
-                            })
-                            .catch(function (err) {
-                                console.error("Camera switch failed:", err);
-                                alert(
-                                    "Unable to switch camera. Your device may not support this feature.",
-                                );
-                            });
-                    }
-                });
             });
         </script>
     </body>
